@@ -1,21 +1,10 @@
 ﻿using Adic;
 using Adic.Container;
+using RollyVortex.Scripts.Game.Controllers;
+using RollyVortex.Scripts.Interfaces.Game.Controllers;
 using RollyVortex.Scripts.Utils;
-
-// using CityGangs.Scripts.Services.Core;
-// using CityGangs.Scripts.Services.Game;
-// using CityGangs.Scripts.Services.Configuration;
-// using CityGangs.Scripts.Controllers.Entities.Cards;
-// using CityGangs.Scripts.Game.Animations;
-// using CityGangs.Scripts.Interfaces.Controllers.Entities.Cards;
-// using CityGangs.Scripts.Interfaces.Services.Animation;
-// using CityGangs.Scripts.Interfaces.Services.Configuration;
-// using CityGangs.Scripts.Interfaces.Services.Core;
-// using CityGangs.Scripts.Interfaces.Services.Game;
-// using CityGangs.Scripts.Interfaces.Services.UI;
-// using CityGangs.Scripts.Services.Animation;
-// using CityGangs.Scripts.Services.Test;
-// using CityGangs.Scripts.Services.UI;
+using RollyVortex.Scripts.Services;
+using RollyVortex.Scripts.Interfaces.Services;
 
 namespace RollyVortex.Scripts.Game
 {
@@ -28,28 +17,32 @@ namespace RollyVortex.Scripts.Game
                 .RegisterExtension<EventCallerContainerExtension>()
                 .RegisterExtension<AdicSharedContainerExtension>();
 
-            // IInjectionService injectionService = new InjectionService(container);
+            IInjectionService injectionService = new InjectionService(container);
 
-            // container
-                    // .Bind<IInjectionService>().To(injectionService)
-                    // .Bind<IColyseusService>().ToSingleton<ColyseusService>()
+            container
+                .Bind<IInjectionService>().To(injectionService)
+                .Bind<IGameService>().ToSingleton<GameService>();
                     // .Bind<ITouchService>().ToSingleton<TouchService>()
                     // .Bind<IGameService>().ToSingleton<GameServiceTest>()
                     // .Bind<IGameboardUIService>().ToSingleton<GameboardUIService>()
                     // .Bind<IAnimationService>().ToSingleton<AnimationService>()
                     // .Bind<IInitAnimations>().ToSingleton<InitAnimations>();
 
-            BindHeroCardControllers(container);
+            BindControllers(container);
 
             AddContainer(container);
         }
 
         public override void Init() { }
 
-        private void BindHeroCardControllers(IInjectionContainer container)
+        private void BindControllers(IInjectionContainer container)
         {
-            // container
-            //     .Bind<ICardBoardViewTouchController>().To<CardBoardViewTouchController>()
+            container
+                .Bind<ICharacterMovementController>().To<CharacterMovementController>()
+                .Bind<ICharacterCollisionController>().To<CharacterCollisionController>()
+                .Bind<ICharacterRollingController>().To<CharacterRollingController>()
+                .Bind<IEndlessTunnelController>().To<EndlessTunnelController>();
+
             //     .Bind<ICardPlayedIndicationController>().To<CardPlayedIndicationController>();
         }
     }

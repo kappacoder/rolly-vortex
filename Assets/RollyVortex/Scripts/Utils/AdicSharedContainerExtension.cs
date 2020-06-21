@@ -1,20 +1,14 @@
 ﻿using Adic;
+using System;
+using System.Linq;
+using UnityEngine;
 using Adic.Binding;
 using Adic.Container;
 using Adic.Injection;
-using System;
+using UnityEngine.Scripting;
 using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using UnityEngine.Scripting; // using CityGangs.Scripts.Interfaces.Models.Configuration;
-// using CityGangs.Scripts.Interfaces.Services.Configuration;
-// using CityGangs.Scripts.Interfaces.Services.Core;
-// using CityGangs.Scripts.Interfaces.Services.UI;
-// using CityGangs.Scripts.Models.Configuration;
-// using CityGangs.Scripts.Services.Core;
-// using CityGangs.Scripts.Services.Configuration;
-// using CityGangs.Scripts.Services.Test;
-// using CityGangs.Scripts.Services.UI;
+using RollyVortex.Scripts.Services;
+using RollyVortex.Scripts.Interfaces.Services;
 
 namespace RollyVortex.Scripts.Utils
 {
@@ -49,17 +43,17 @@ namespace RollyVortex.Scripts.Utils
             //string serverEndpoint = @"http://localhost:8080/";
 
             GameObject poolFactory = GameObject.Find("SharedComponent/PoolFactory");
-            //UnityEngine.Object.DontDestroyOnLoad(poolFactory);
+            // UnityEngine.Object.DontDestroyOnLoad(poolFactory);
 
-            // container
-            //         //.Bind<IBundleManager>().ToSingleton<BundleManager>()
+            container
+                .Bind<PoolFactory>().ToGameObject(poolFactory)
+                .Bind<IEntitiesService>().ToSingleton<EntitiesService>();
             //         .Bind<IConfigurationService>().To(configurationService)
-            //         .Bind<IChilliConnectService>().ToSingleton<ChilliConnectServiceTest>()
             //         .Bind<ISceneService>().ToSingleton<SceneService>()
             //         .Bind<IEntitiesUIService>().ToSingleton<EntitiesUIService>()
+            //         //.Bind<IBundleManager>().ToSingleton<BundleManager>()
             //         .Bind<IRewardsUIService>().ToSingleton<RewardsUIService>()
             //         .Bind<INotificationsUIService>().ToSingleton<NotificationsUIService>()
-            //         .Bind<PoolFactory>().ToGameObject(poolFactory);
 
             return container;
         }

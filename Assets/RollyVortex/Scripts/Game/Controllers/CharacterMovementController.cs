@@ -1,18 +1,44 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Adic;
+using RollyVortex.Scripts.Game.Components;
+using UniRx;
 using UnityEngine;
+using UnityEngine.Scripting;
+using RollyVortex.Scripts.Interfaces.Services;
+using RollyVortex.Scripts.Interfaces.Game.Controllers;
 
-public class CharacterMovementController : MonoBehaviour
+namespace RollyVortex.Scripts.Game.Controllers
 {
-    // Start is called before the first frame update
-    void Start()
+    [Preserve]
+    public class CharacterMovementController : ICharacterMovementController
     {
-        
-    }
+        [Inject]
+        private IGameService gameService;
+    
+        private Transform characterTransform;
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        private float rotationSpeed = 0.5f;
+    
+        public void Init(CharacterComponent character)
+        {
+            characterTransform = character.transform;
+
+            Subscribe();
+        }
+
+        private void Subscribe()
+        {
+            Observable.EveryUpdate()
+                .Where(x => gameService.IsRunningRX.Value)
+                .Where(x => Input.touchCount != 0 && Input.GetTouch(0).phase == TouchPhase.Moved)
+                .Subscribe(x => OnUserTouch())
+                .AddTo(characterTransform.gameObject);
+        }
+
+        private void OnUserTouch()
+        {
+            Vector2 touchDelta = Input.GetTouch(0).deltaPosition;
+
+            characterTransform.Rotate(Vector3.forward, touchDelta.x * rotationSpeed);
+        }
     }
 }

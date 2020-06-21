@@ -1,18 +1,26 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using UniRx;
 using UnityEngine;
 
-public class CharacterComponent : MonoBehaviour
+namespace RollyVortex.Scripts.Game.Components
 {
-    // Start is called before the first frame update
-    void Start()
+    public enum CharacterState
     {
-        
+        Unknown,
+        Alive,
+        Invincible,
+        Dead
     }
-
-    // Update is called once per frame
-    void Update()
+    
+    public class CharacterComponent : MonoBehaviour
     {
+        public Transform Body;
+        public SphereCollider Collider;
         
+        public IReactiveProperty<CharacterState> StateRX { get; private set; }
+
+        private void Awake()
+        {
+            StateRX = new ReactiveProperty<CharacterState>();
+        }
     }
 }

@@ -1,32 +1,33 @@
 ﻿using System;
 using UnityEngine;
+using System.Linq;
 using SubjectNerd.Utilities;
 using System.Collections.Generic;
 
 namespace RollyVortex.Scripts.Utils
 {
-    public enum ParticleTypes
+    public enum ObstacleDifficulty
     {
-        // Per faction
-        StreetKidsSkateboard,
-        StreetKidsSprayCan,
-        MafiaKnife,
-        BrainiacsDefault,
-        MysticsDefault,
-        EliteDefault,
-        GuardiansDefault,
-        ArmyDefault,
-        CelebritiesDefault,
-        SportsDefault
+        None,
+        Easy,
+        Medium,
+        Hard
     }
 
     public class PoolFactory : MonoBehaviour
     {
-        [Reorderable("", true, true)] public List<ParticlePoolData> ParticlesPoolConfig;
+        public Transform ObstaclesTransform;
+        
+        [Reorderable("", true, true)] public List<ObstaclePoolData> ObstaclesPoolConfig;
 
         private Dictionary<object, ObjectPool> pools;
 
-        public GameObject GetObject(ParticleTypes id)
+        /// <summary>
+        /// Get a specific obstacle by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        public GameObject GetObstacle(string id)
         {
             try
             {
@@ -34,8 +35,33 @@ namespace RollyVortex.Scripts.Utils
             }
             catch
             {
-                Debug.LogWarning("An object with the ID " + id +
-                    " has not been added to the pool. Add it from Splash -> SharedComponent -> PoolFactory -> objectsToPool");
+                Debug.LogWarning("An obstacle with the ID " + id +
+                    " has not been added to the pool. Add it from SharedComponent -> PoolFactory -> ObstaclesPoolConfig");
+
+                return null;
+            }
+        }
+        
+        /// <summary>
+        /// Get a random obstacle by difficulty
+        /// </summary>
+        /// <param name="difficulty"></param>
+        /// <returns></returns>
+        public GameObject GetObstacle(ObstacleDifficulty difficulty)
+        {
+            try
+            {
+                var obstaclesData = ObstaclesPoolConfig.Where(x => x.Difficulty == difficulty)
+                    .ToArray();
+
+                string id = obstaclesData[UnityEngine.Random.Range(0, obstaclesData.Length)].Id;
+
+                return pools[id].GetObject();
+            }
+            catch
+            {
+                Debug.LogWarning("An object with the difficulty " + difficulty +
+                    " has not been added to the pool. Add it from SharedComponent -> PoolFactory -> ObstaclesPoolConfig");
 
                 return null;
             }
@@ -45,22 +71,19 @@ namespace RollyVortex.Scripts.Utils
         {
             pools = new Dictionary<object, ObjectPool>();
 
-            PreloadParticles();
+            PreloadObstacles();
         }
 
-        private void PreloadParticles()
+        private void PreloadObstacles()
         {
-            var particlesWrapper = new GameObject().transform;
-
-            particlesWrapper.name = "Particles";
-            particlesWrapper.SetParent(transform, false);
-
-            foreach (var objData in ParticlesPoolConfig)
+            foreach (var objData in ObstaclesPoolConfig)
             {
+                objData.Id = objData.Prefab.name;
+                
                 var wrapper = new GameObject().transform;
 
-                wrapper.name = objData.Id.ToString();
-                wrapper.SetParent(particlesWrapper, false);
+                wrapper.name = objData.Id;
+                wrapper.SetParent(ObstaclesTransform, false);
 
                 pools[objData.Id] = new ObjectPool(objData.Prefab, objData.Count, wrapper);
             }
@@ -72,11 +95,12 @@ namespace RollyVortex.Scripts.Utils
     {
         public int Count;
         public GameObject Prefab;
+        [HideInInspector] public string Id;
     }
 
     [Serializable]
-    public class ParticlePoolData : ObjectPoolData
+    public class ObstaclePoolData : ObjectPoolData
     {
-        public ParticleTypes Id;
+        public ObstacleDifficulty Difficulty;
     }
 }

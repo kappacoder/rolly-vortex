@@ -101,6 +101,27 @@ namespace RollyVortex.Scripts.Services
                     throw new ArgumentOutOfRangeException(nameof(gameMode), gameMode, null);
             }
         }
+
+        public void TriggerSpeedBoost()
+        {
+            gameSpeed *= 2;
+
+            Observable.Timer(TimeSpan.FromSeconds(1))
+                .Where(x => IsRunningRX.Value)
+                .Subscribe(x =>
+                {
+                    gameSpeed = 20f;
+                })
+                .AddTo(mainCharacter.gameObject);
+            
+            Observable.Timer(TimeSpan.FromSeconds(2))
+                .Where(x => IsRunningRX.Value)
+                .Subscribe(x =>
+                {
+                    mainCharacter.StateRX.Value = CharacterState.Alive;
+                })
+                .AddTo(mainCharacter.gameObject);
+        }
         
         private void Subscribe()
         {
@@ -132,6 +153,9 @@ namespace RollyVortex.Scripts.Services
                 
                 if (Random.Range(0, 3) == 0)
                     SpawnGem();
+                
+                if (Random.Range(0, 3) == 0)
+                    SpawnBoostpad();
             }
             
             // check if obstacles need to be returned to pool
@@ -178,12 +202,26 @@ namespace RollyVortex.Scripts.Services
             var gem = poolFactory.GetObstacle("Gem");
 
             var pos = gem.transform.position;
-            gem.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles);
+            gem.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles/2f);
             gem.transform.Rotate(0f, 0f, Random.Range(0, 360));
             
             gem.SetActive(true);
             
-            obstacles.Add(gem);
+            gems.Add(gem);
+        }
+        
+        private void SpawnBoostpad()
+        {
+            var pad = poolFactory.GetObstacle("Boostpad");
+
+            var pos = pad.transform.position;
+            // 1.5f is half the depth of boostpad
+            pad.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles/2f - 1.5f);
+            pad.transform.Rotate(0f, 0f, Random.Range(0, 360));
+            
+            pad.SetActive(true);
+            
+            gems.Add(pad);
         }
 
         private void Reset()
@@ -200,6 +238,8 @@ namespace RollyVortex.Scripts.Services
             
             movingObjectsWrapper.position = Vector3.zero;
 
+            gameSpeed = 20f;
+            
             CurrentScoreRX.Value = 0;
         }
     }

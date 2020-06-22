@@ -29,6 +29,8 @@ namespace RollyVortex.Scripts.Game.Components
             
             foreach (Transform child in transform)
             {
+                child.gameObject.SetActive(true);
+                
                 child.DOScale(0f, 0.3f)
                     .From()
                     .SetEase(Ease.InBack)

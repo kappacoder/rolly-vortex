@@ -15,7 +15,7 @@ namespace RollyVortex.Scripts.Game.Controllers
         Obstacle = 10,
         Score = 11,
         Gem = 12,
-        FinishLine = 13,
+        Boostpad = 13,
         BoostPlatform = 14
     }
     
@@ -44,7 +44,7 @@ namespace RollyVortex.Scripts.Game.Controllers
                     switch (collider.gameObject.layer)
                     {
                         case (int)CollisionLayer.Obstacle:
-                            OnCollisionWithObstacle();
+                            OnCollisionWithObstacle(collider);
                             break;
                         
                         case (int)CollisionLayer.Score:
@@ -55,13 +55,26 @@ namespace RollyVortex.Scripts.Game.Controllers
                             // collect gems
                             collider.transform.parent.gameObject.SetActive(false);
                             break;
+                        
+                        case (int)CollisionLayer.Boostpad:
+                            // make invincible, increase speed
+                            character.StateRX.Value = CharacterState.Invincible;
+                            gameService.TriggerSpeedBoost();
+                            break;
                     }
                 })
                 .AddTo(character);
         }
 
-        private void OnCollisionWithObstacle()
+        private void OnCollisionWithObstacle(Collider collider)
         {
+            if (character.StateRX.Value == CharacterState.Invincible)
+            {
+                // destroy game object
+                collider.gameObject.SetActive(false);
+                return;
+            }
+            
             // Die
             Debug.Log("dying?");
             character.StateRX.Value = CharacterState.Dead;

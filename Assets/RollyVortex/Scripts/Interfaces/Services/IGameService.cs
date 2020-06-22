@@ -17,5 +17,7 @@ namespace RollyVortex.Scripts.Interfaces.Services
         void StartRunning(GameMode gameMode);
 
         void Dispose();
+
+        void TriggerSpeedBoost();
     }
 }

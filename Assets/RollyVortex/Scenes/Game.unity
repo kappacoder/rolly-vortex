@@ -1338,6 +1338,11 @@ MonoBehaviour:
       type: 3}
     Id: 
     Difficulty: 0
+  - Count: 2
+    Prefab: {fileID: 8273132127657482735, guid: 9ab999f58ec34214d9756ad694deec19,
+      type: 3}
+    Id: 
+    Difficulty: 0
 --- !u!1 &1042654338
 GameObject:
   m_ObjectHideFlags: 0

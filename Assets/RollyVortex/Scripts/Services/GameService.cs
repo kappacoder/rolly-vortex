@@ -7,8 +7,8 @@ using RollyVortex.Scripts.Game.Components;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
 using RollyVortex.Scripts.Utils;
-using System.Collections;
 using System.Collections.Generic;
+using Random = UnityEngine.Random;
 
 namespace RollyVortex.Scripts.Services
 {
@@ -21,8 +21,10 @@ namespace RollyVortex.Scripts.Services
     [Preserve]
     public class GameService : IGameService
     {
-        public IReactiveProperty<bool> IsRunningRX { get; private set; }
+        public IReactiveProperty<bool> IsRunningRX { get; } = new ReactiveProperty<bool>();
 
+        public IReactiveProperty<int> CurrentScoreRX { get; } = new ReactiveProperty<int>();
+        
         public float GameSpeed
         {
             get
@@ -45,19 +47,22 @@ namespace RollyVortex.Scripts.Services
 
         private CompositeDisposable disposables;
 
-        private Vector3 characterDefaultPosition = new Vector3(-3f, 0f, 2f);
+        private Vector3 characterDefaultPosition = new Vector3(-2.5f, 0f, 1f);
         private float gameSpeed = 20f;
 
         private IList<GameObject> obstacles;
+        private IList<GameObject> gems;
 
-        private float firstObstacleDistance = 15f;
-        private float distanceBetweenObstacles = 5f;
+        private float firstObstacleDistance = 10f;
+        private float distanceBetweenObstacles = 8f;
+        
+        private int obstaclesPassed = 0;
         
         public void Init(Transform gameWrapper)
         {
-            IsRunningRX = new ReactiveProperty<bool>();
             disposables = new CompositeDisposable();
             obstacles = new List<GameObject>();
+            gems = new List<GameObject>();
             
             this.gameWrapper = gameWrapper;
             movingObjectsWrapper = gameWrapper.Find("MovingObjects");
@@ -82,11 +87,12 @@ namespace RollyVortex.Scripts.Services
 
         public void StartRunning(GameMode gameMode)
         {
+            Reset();
+    
             switch (gameMode)
             {
                 case GameMode.Endless:
-                    // start endless level
-
+                    
                     IsRunningRX.Value = true;
                     break;
                 case GameMode.Finish:
@@ -118,21 +124,83 @@ namespace RollyVortex.Scripts.Services
 
             if (movingObjectsWrapper.position.z + firstObstacleDistance > 0)
                 return;
+
+            if (((movingObjectsWrapper.position.z + firstObstacleDistance) / distanceBetweenObstacles) * -1 >
+                obstacles.Count + obstaclesPassed)
+            {
+                SpawnObstacle();
+                
+                if (Random.Range(0, 3) == 0)
+                    SpawnGem();
+            }
             
-            if ((movingObjectsWrapper.position.z / distanceBetweenObstacles)*-1 > obstacles.Count)
-                SpawnObstacle(movingObjectsWrapper.position.z + 150f * (obstacles.Count+1));
+            // check if obstacles need to be returned to pool
+            foreach (GameObject o in obstacles)
+            {
+                if (o.transform.position.z < -5f)
+                {
+                    o.SetActive(false);
+                    obstacles.Remove(o);
+                    obstaclesPassed++;
+                    
+                    break;
+                }
+            }
+            
+            // check if gems need to be returned to pool
+            foreach (GameObject gem in gems)
+            {
+                if (gem.transform.position.z < -5f)
+                {
+                    gem.SetActive(false);
+                    gems.Remove(gem);
+                    
+                    break;
+                }
+            }
         }
 
-        private void SpawnObstacle(float posZ)
+        private void SpawnObstacle()
         {
             var obstacle = poolFactory.GetObstacle(ObstacleDifficulty.Easy);
 
             var pos = obstacle.transform.position;
-            obstacle.transform.position = new Vector3(pos.x, pos.y, posZ);
+            obstacle.transform.position = new Vector3(pos.x, pos.y, 25f);
+            obstacle.transform.Rotate(0f, 0f, Random.Range(0, 360));
             
             obstacle.SetActive(true);
             
             obstacles.Add(obstacle);
+        }
+
+        private void SpawnGem()
+        {
+            var gem = poolFactory.GetObstacle("Gem");
+
+            var pos = gem.transform.position;
+            gem.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles);
+            gem.transform.Rotate(0f, 0f, Random.Range(0, 360));
+            
+            gem.SetActive(true);
+            
+            obstacles.Add(gem);
+        }
+
+        private void Reset()
+        {
+            foreach (GameObject o in obstacles)
+            {
+                o.SetActive(false);
+            }
+            
+            obstacles.Clear();
+            obstaclesPassed = 0;
+            
+            mainCharacter.Reset();
+            
+            movingObjectsWrapper.position = Vector3.zero;
+
+            CurrentScoreRX.Value = 0;
         }
     }
 }

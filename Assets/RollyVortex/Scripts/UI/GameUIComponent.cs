@@ -4,12 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using RollyVortex.Scripts.Services;
 using RollyVortex.Scripts.Interfaces.Services;
+using TMPro;
 
 namespace RollyVortex.Scripts.UI
 {
-    public class MenuUIComponent : MonoBehaviour
+    public class GameUIComponent : MonoBehaviour
     {
-        public Button PlayButton;
+        public TMP_Text ScoreText;
 
         [Inject]
         private IGameService gameService;
@@ -31,19 +32,20 @@ namespace RollyVortex.Scripts.UI
 
         private void Subscribe()
         {
-            PlayButton.OnClickAsObservable()
-                .Where(x => !gameService.IsRunningRX.Value)
+            gameService.CurrentScoreRX
+                .Where(x => gameService.IsRunningRX.Value)
                 .Subscribe(x =>
                 {
-                    gameService.StartRunning(GameMode.Endless);
+                    ScoreText.text = x.ToString();
                 })
                 .AddTo(this);
             
             gameService.IsRunningRX
                 .Subscribe(isRunning =>
                 {
-                    Debug.Log("game service " + isRunning);
-                    canvas.enabled = !isRunning;
+                    canvas.enabled = isRunning;
+                    
+                    ScoreText.text = "0";
                 })
                 .AddTo(this);
         }

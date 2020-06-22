@@ -6,6 +6,7 @@ using UnityEngine.Scripting;
 using System.Collections.Generic;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
+using System.Resources;
 
 namespace RollyVortex.Scripts.Game.Controllers
 {
@@ -36,6 +37,11 @@ namespace RollyVortex.Scripts.Game.Controllers
                 .Where(x => gameService.IsRunningRX.Value)
                 .Subscribe(x => OnFixedUpdate())
                 .AddTo(tunnels[0].parent.gameObject);
+            
+            gameService.IsRunningRX
+                .Where(isRunning => isRunning)
+                .Subscribe(x => Reset())
+                .AddTo(tunnels[0].parent.gameObject);
         }
 
         private void OnFixedUpdate()
@@ -47,6 +53,17 @@ namespace RollyVortex.Scripts.Game.Controllers
 
                 float maxPositionZ = tunnels.Max(x => x.position.z);
                 tunnel.position = new Vector3(0f, 0f, maxPositionZ + distanceBetweenTunnels);
+            }
+        }
+
+        private void Reset()
+        {
+            int index = 0;
+            foreach (Transform tunnel in tunnels)
+            {
+                tunnel.localPosition = new Vector3(0f, 0f, distanceBetweenTunnels * (index-1));
+
+                index++;
             }
         }
     }

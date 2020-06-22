@@ -18,9 +18,20 @@ namespace RollyVortex.Scripts.Game.Components
         
         public IReactiveProperty<CharacterState> StateRX { get; private set; }
 
+        private Vector3 defaultCharacterRotation;
+        
+        public void Reset()
+        {
+            transform.eulerAngles = defaultCharacterRotation;
+
+            StateRX.Value = CharacterState.Unknown;
+        }
+        
         private void Awake()
         {
             StateRX = new ReactiveProperty<CharacterState>();
+
+            defaultCharacterRotation = transform.eulerAngles;
         }
     }
 }

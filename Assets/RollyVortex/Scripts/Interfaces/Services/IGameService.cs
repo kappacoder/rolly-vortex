@@ -8,6 +8,8 @@ namespace RollyVortex.Scripts.Interfaces.Services
     {
         IReactiveProperty<bool> IsRunningRX { get; }
         
+        IReactiveProperty<int> CurrentScoreRX { get; }
+        
         float GameSpeed { get; }
         
         void Init(Transform gameWrapper);

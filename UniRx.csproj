@@ -475,26 +475,26 @@
  <Reference Include="UnityEditor.Android.Extensions">
  <HintPath>D:/Unity/2019.4.0f1/Editor/Data/PlaybackEngines/AndroidPlayer/UnityEditor.Android.Extensions.dll</HintPath>
  </Reference>
- <Reference Include="ICSharpCode.NRefactory">
- <HintPath>D:/Unity Projects/Rolly Vortex/Library/PackageCache/com.unity.render-pipelines.core@7.3.1/Editor/ShaderGenerator/ICSharpCode.NRefactory.dll</HintPath>
- </Reference>
- <Reference Include="DOTweenEditor">
- <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll</HintPath>
- </Reference>
- <Reference Include="DOTweenProEditor">
- <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTweenPro/Editor/DOTweenProEditor.dll</HintPath>
- </Reference>
  <Reference Include="DemiLib">
  <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DemiLib/Core/DemiLib.dll</HintPath>
- </Reference>
- <Reference Include="DOTween">
- <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTween/DOTween.dll</HintPath>
  </Reference>
  <Reference Include="DemiEditor">
  <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DemiLib/Core/Editor/DemiEditor.dll</HintPath>
  </Reference>
+ <Reference Include="DOTween">
+ <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTween/DOTween.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTweenEditor">
+ <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTween/Editor/DOTweenEditor.dll</HintPath>
+ </Reference>
  <Reference Include="DOTweenPro">
  <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTweenPro/DOTweenPro.dll</HintPath>
+ </Reference>
+ <Reference Include="DOTweenProEditor">
+ <HintPath>D:/Unity Projects/Rolly Vortex/Assets/Plugins/Demigiant/DOTweenPro/Editor/DOTweenProEditor.dll</HintPath>
+ </Reference>
+ <Reference Include="ICSharpCode.NRefactory">
+ <HintPath>D:/Unity Projects/Rolly Vortex/Library/PackageCache/com.unity.render-pipelines.core@7.3.1/Editor/ShaderGenerator/ICSharpCode.NRefactory.dll</HintPath>
  </Reference>
  <Reference Include="mscorlib">
  <HintPath>D:/Unity/2019.4.0f1/Editor/Data/MonoBleedingEdge/lib/mono/4.7.1-api/mscorlib.dll</HintPath>

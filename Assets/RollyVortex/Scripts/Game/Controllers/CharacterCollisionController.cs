@@ -1,5 +1,6 @@
 ﻿using Adic;
 using UniRx;
+using DG.Tweening;
 using UnityEngine;
 using UniRx.Triggers;
 using UnityEngine.Scripting;
@@ -12,7 +13,7 @@ namespace RollyVortex.Scripts.Game.Controllers
     public enum CollisionLayer
     {
         Obstacle = 10,
-        Hole = 11,
+        Score = 11,
         Gem = 12,
         FinishLine = 13,
         BoostPlatform = 14
@@ -45,6 +46,15 @@ namespace RollyVortex.Scripts.Game.Controllers
                         case (int)CollisionLayer.Obstacle:
                             OnCollisionWithObstacle();
                             break;
+                        
+                        case (int)CollisionLayer.Score:
+                            gameService.CurrentScoreRX.Value++;
+                            break;
+                        
+                        case (int)CollisionLayer.Gem:
+                            // collect gems
+                            collider.transform.parent.gameObject.SetActive(false);
+                            break;
                     }
                 })
                 .AddTo(character);
@@ -55,6 +65,10 @@ namespace RollyVortex.Scripts.Game.Controllers
             // Die
             Debug.Log("dying?");
             character.StateRX.Value = CharacterState.Dead;
+
+            Camera.main.DOShakePosition(0.3f, 1.2f, 25)
+                .From()
+                .Play();
         }
     }
 }

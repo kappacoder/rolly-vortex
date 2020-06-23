@@ -6,7 +6,6 @@ using UnityEngine.Scripting;
 using System.Collections.Generic;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
-using System.Resources;
 
 namespace RollyVortex.Scripts.Game.Controllers
 {
@@ -61,7 +60,7 @@ namespace RollyVortex.Scripts.Game.Controllers
             int index = 0;
             foreach (Transform tunnel in tunnels)
             {
-                tunnel.localPosition = new Vector3(0f, 0f, distanceBetweenTunnels * (index-1));
+                tunnel.localPosition = new Vector3(0f, 0f, distanceBetweenTunnels * index);
 
                 index++;
             }

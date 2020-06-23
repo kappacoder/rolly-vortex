@@ -53,8 +53,8 @@ namespace RollyVortex.Scripts.Services
         private IList<GameObject> obstacles;
         private IList<GameObject> gems;
 
-        private float firstObstacleDistance = 10f;
-        private float distanceBetweenObstacles = 8f;
+        private float firstObstacleDistance = 5f;
+        private float distanceBetweenObstacles = 10f;
         
         private int obstaclesPassed = 0;
         
@@ -104,7 +104,7 @@ namespace RollyVortex.Scripts.Services
 
         public void TriggerSpeedBoost()
         {
-            gameSpeed *= 2;
+            gameSpeed *= 1.5f;
 
             Observable.Timer(TimeSpan.FromSeconds(1))
                 .Where(x => IsRunningRX.Value)
@@ -161,7 +161,7 @@ namespace RollyVortex.Scripts.Services
             // check if obstacles need to be returned to pool
             foreach (GameObject o in obstacles)
             {
-                if (o.transform.position.z < -5f)
+                if (o.transform.position.z < -8f)
                 {
                     o.SetActive(false);
                     obstacles.Remove(o);
@@ -174,7 +174,7 @@ namespace RollyVortex.Scripts.Services
             // check if gems need to be returned to pool
             foreach (GameObject gem in gems)
             {
-                if (gem.transform.position.z < -5f)
+                if (gem.transform.position.z < -8f)
                 {
                     gem.SetActive(false);
                     gems.Remove(gem);
@@ -189,7 +189,7 @@ namespace RollyVortex.Scripts.Services
             var obstacle = poolFactory.GetObstacle(ObstacleDifficulty.Easy);
 
             var pos = obstacle.transform.position;
-            obstacle.transform.position = new Vector3(pos.x, pos.y, 25f);
+            obstacle.transform.position = new Vector3(pos.x, pos.y, 20f);
             obstacle.transform.Rotate(0f, 0f, Random.Range(0, 360));
             
             obstacle.SetActive(true);
@@ -202,7 +202,7 @@ namespace RollyVortex.Scripts.Services
             var gem = poolFactory.GetObstacle("Gem");
 
             var pos = gem.transform.position;
-            gem.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles/2f);
+            gem.transform.position = new Vector3(pos.x, pos.y, 20f + distanceBetweenObstacles/2f);
             gem.transform.Rotate(0f, 0f, Random.Range(0, 360));
             
             gem.SetActive(true);
@@ -216,7 +216,7 @@ namespace RollyVortex.Scripts.Services
 
             var pos = pad.transform.position;
             // 1.5f is half the depth of boostpad
-            pad.transform.position = new Vector3(pos.x, pos.y, 25f + distanceBetweenObstacles/2f - 1.5f);
+            pad.transform.position = new Vector3(pos.x, pos.y, 20f + distanceBetweenObstacles/2f - 2.15f);
             pad.transform.Rotate(0f, 0f, Random.Range(0, 360));
             
             pad.SetActive(true);

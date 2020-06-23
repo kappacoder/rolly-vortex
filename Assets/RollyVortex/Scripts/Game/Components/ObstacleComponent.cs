@@ -29,6 +29,7 @@ namespace RollyVortex.Scripts.Game.Components
             
             foreach (Transform child in transform)
             {
+                child.localScale = Vector3.one;
                 child.gameObject.SetActive(true);
                 
                 child.DOScale(0f, 0.3f)
@@ -42,23 +43,23 @@ namespace RollyVortex.Scripts.Game.Components
             }
             
             // Rotate some obstacles when spawned
-            transform.DORotate(new Vector3(0f, 0f, transform.position.z + Random.Range(-30f, 30f)), 0.3f, RotateMode.FastBeyond360)
+            transform.DORotate(new Vector3(0f, 0f, transform.position.z + Random.Range(-30f, 30f)), 0.3f, RotateMode.Fast)
                 .From()
                 .SetDelay(0.2f)
                 .SetEase(Ease.OutSine)
                 .Play();
 
-            Color newColor = GetRandomColor();
-                    
-            foreach (var pair in renderPairs)
-            {
-                var renderer = pair.First;
-                var propertyBlock = pair.Second;
-                
-                renderer.GetPropertyBlock(propertyBlock);
-                propertyBlock.SetColor("_BaseColor", newColor);
-                renderer.SetPropertyBlock(propertyBlock);
-            }
+            // Color newColor = GetRandomColor();
+            //         
+            // foreach (var pair in renderPairs)
+            // {
+            //     var renderer = pair.First;
+            //     var propertyBlock = pair.Second;
+            //     
+            //     renderer.GetPropertyBlock(propertyBlock);
+            //     propertyBlock.SetColor("_BaseColor", Color.blue);
+            //     renderer.SetPropertyBlock(propertyBlock);
+            // }
         }
 
         void OnDisable()
@@ -72,9 +73,13 @@ namespace RollyVortex.Scripts.Game.Components
             colliders = new List<Transform>();
             renderPairs = new List<Pair<MeshRenderer, MaterialPropertyBlock>>();
 
+            
+            
             foreach (Transform child in transform)
             {
                 colliders.Add(child);
+                
+                child.GetComponent<MeshRenderer>().sharedMaterial.SetColor("_BaseColor", Color.magenta);
                 
                 renderPairs.Add(new Pair<MeshRenderer, MaterialPropertyBlock>(
                     child.GetComponent<MeshRenderer>(),

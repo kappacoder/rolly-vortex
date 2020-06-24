@@ -41,9 +41,19 @@ namespace RollyVortex.Scripts.Game.Controllers
 
         private void Subscribe()
         {
-            Debug.Log("subscribing for collision");
+            SubscribeForCollision();
+
+            // Every time the skin is changed, re-subscribe for the new collider
+            character.OnSkinChangedRX
+                .Subscribe(x => SubscribeForCollision())
+                .AddTo(character);
+        }
+
+        private void SubscribeForCollision()
+        {
             character.Collider
                 .OnTriggerEnterAsObservable()
+                .TakeUntil(character.OnSkinChangedRX)
                 .Subscribe(collider =>
                 {
                     switch (collider.gameObject.layer)

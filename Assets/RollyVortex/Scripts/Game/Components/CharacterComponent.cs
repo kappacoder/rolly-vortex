@@ -1,9 +1,8 @@
 ﻿using Adic;
-using DG.Tweening;
-using RollyVortex.Scripts.Interfaces.Services;
-using System;
 using UniRx;
+using System;
 using UnityEngine;
+using RollyVortex.Scripts.Interfaces.Services;
 
 namespace RollyVortex.Scripts.Game.Components
 {
@@ -17,16 +16,38 @@ namespace RollyVortex.Scripts.Game.Components
     
     public class CharacterComponent : MonoBehaviour
     {
+        public ISubject<bool> OnSkinChangedRX { get; private set; }
+        
         public Transform Body;
         public GameObject Shield;
-        public SphereCollider Collider;
+        public Collider Collider;
         
         public IReactiveProperty<CharacterState> StateRX { get; private set; }
 
         [Inject] 
         private IGameService gameService;
+        [Inject]
+        private IEntitiesService entitiesService;
+        [Inject]
+        private IUserService userService;
         
         private Vector3 defaultCharacterRotation;
+
+        public void SetSkin(int id)
+        {
+            var skinData = entitiesService.GetCharacterSkinData(id);
+
+            if (skinData == null)
+                return;
+            
+            GameObject newBody = Instantiate(skinData.Body, transform);
+            DestroyImmediate(Body.gameObject);
+
+            Body = newBody.transform;
+            Collider = Body.GetComponent<Collider>();
+            
+            OnSkinChangedRX.OnNext(true);
+        }
         
         public void Reset()
         {
@@ -40,15 +61,20 @@ namespace RollyVortex.Scripts.Game.Components
         private void Awake()
         {
             StateRX = new ReactiveProperty<CharacterState>();
+            OnSkinChangedRX = new Subject<bool>();
 
             defaultCharacterRotation = transform.eulerAngles;
-
-            Subscribe();
         }
 
         private void Start()
         {
             this.Inject();;
+        }
+
+        [Inject]
+        private void PostConstruct()
+        {
+            Subscribe();
         }
 
         private void Subscribe()
@@ -57,9 +83,7 @@ namespace RollyVortex.Scripts.Game.Components
                 .Subscribe(x =>
                 {
                     Shield.SetActive(true);
-                    
-                    // it should automatically play the clip
-                    
+
                     Observable.Timer(TimeSpan.FromSeconds(2))
                         .Where(_ => gameService.IsRunningRX.Value)
                         .Subscribe(_ =>
@@ -69,50 +93,10 @@ namespace RollyVortex.Scripts.Game.Components
                         .AddTo(this);
                 })
                 .AddTo(this);
-        }
 
-        private void StartBlinking()
-        {
-            var material = Shield.GetComponent<MeshRenderer>().material;
-
-            Color currentColor = material.GetColor("_BaseColor");
-            // currentColor
-            
-            // VERY UGLY AND HACKY WAY TO BLINK COLOR >>>
-            
-            DOTween.To(() => 1f, x =>
-            {
-                currentColor.a = x;
-                material.SetColor("_BaseColor", currentColor);
-            }, 0.5f, 0.2f).Play();
-            
-            DOTween.To(() => 0.5f, x =>
-            {
-                currentColor.a = x;
-                material.SetColor("_BaseColor", currentColor);
-            }, 1f, 0.2f)
-                .SetDelay(0.2f).Play();
-            
-            DOTween.To(() => 1f, x =>
-                {
-                    currentColor.a = x;
-                    material.SetColor("_BaseColor", currentColor);
-                }, 0.5f, 0.2f)
-                .SetDelay(0.4f).Play();
-            
-            DOTween.To(() => 0.5f, x =>
-                {
-                    currentColor.a = x;
-                    material.SetColor("_BaseColor", currentColor);
-                }, 1f, 0.2f)
-                .SetDelay(0.6f).Play();
-            
-            DOTween.To(() => 1f, x =>
-                {
-                    currentColor.a = x;
-                    material.SetColor("_BaseColor", currentColor);
-                }, 0f, 0.2f)
-                .SetDelay(0.8f).Play();
+            userService.SelectedCharacterSkinRX
+                .Subscribe(x => SetSkin(x))
+                .AddTo(this);
         }
     }
 }

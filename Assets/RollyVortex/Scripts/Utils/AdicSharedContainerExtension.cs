@@ -47,6 +47,7 @@ namespace RollyVortex.Scripts.Utils
 
             container
                 .Bind<PoolFactory>().ToGameObject(poolFactory)
+                .Bind<IUserService>().ToSingleton<UserService>()
                 .Bind<IEntitiesService>().ToSingleton<EntitiesService>();
             //         .Bind<IConfigurationService>().To(configurationService)
             //         .Bind<ISceneService>().ToSingleton<SceneService>()

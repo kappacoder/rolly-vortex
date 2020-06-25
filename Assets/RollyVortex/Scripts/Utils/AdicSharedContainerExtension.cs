@@ -33,28 +33,15 @@ namespace RollyVortex.Scripts.Utils
 
         private static IInjectionContainer CreateSharedContainer()
         {
-            //string configDebugFile = Path.Combine(Application.dataPath, "CityGangs/JSON/Game.Config.json");
-            // IGameConfiguration configuration = new Configuration.GameConfiguration();
-            // IConfigurationService configurationService = new ConfigurationService(configuration);
-
             var container = new InjectionContainer()
                 .RegisterExtension<UnityBindingContainerExtension>();
 
-            //string serverEndpoint = @"http://localhost:8080/";
-
-            GameObject poolFactory = GameObject.Find("SharedComponent/PoolFactory");
-            // UnityEngine.Object.DontDestroyOnLoad(poolFactory);
+            GameObject poolFactory = GameObject.Find("GameContainer/PoolFactory");
 
             container
                 .Bind<PoolFactory>().ToGameObject(poolFactory)
                 .Bind<IUserService>().ToSingleton<UserService>()
                 .Bind<IEntitiesService>().ToSingleton<EntitiesService>();
-            //         .Bind<IConfigurationService>().To(configurationService)
-            //         .Bind<ISceneService>().ToSingleton<SceneService>()
-            //         .Bind<IEntitiesUIService>().ToSingleton<EntitiesUIService>()
-            //         //.Bind<IBundleManager>().ToSingleton<BundleManager>()
-            //         .Bind<IRewardsUIService>().ToSingleton<RewardsUIService>()
-            //         .Bind<INotificationsUIService>().ToSingleton<NotificationsUIService>()
 
             return container;
         }

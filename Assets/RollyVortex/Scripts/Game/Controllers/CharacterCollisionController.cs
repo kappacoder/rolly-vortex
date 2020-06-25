@@ -1,14 +1,14 @@
 ﻿using Adic;
 using UniRx;
-using DG.Tweening;
+using System;
 using UnityEngine;
+using DG.Tweening;
 using UniRx.Triggers;
 using UnityEngine.Scripting;
+using RollyVortex.Scripts.Utils;
 using RollyVortex.Scripts.Game.Components;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
-using RollyVortex.Scripts.Utils;
-using System;
 
 namespace RollyVortex.Scripts.Game.Controllers
 {
@@ -17,8 +17,7 @@ namespace RollyVortex.Scripts.Game.Controllers
         Obstacle = 10,
         Score = 11,
         Gem = 12,
-        Boostpad = 13,
-        BoostPlatform = 14
+        BoostPad = 13
     }
     
     [Preserve]
@@ -26,7 +25,10 @@ namespace RollyVortex.Scripts.Game.Controllers
     {
         [Inject]
         private IGameService gameService;
-
+        [Inject]
+        private IEntitiesService entitiesService;
+        [Inject]
+        private IUserService userService;
         [Inject]
         private PoolFactory poolFactory;
 
@@ -62,14 +64,20 @@ namespace RollyVortex.Scripts.Game.Controllers
                             OnCollisionWithObstacle(collider);
                             break;
                         case (int)CollisionLayer.Score:
+                            // increase score
                             OnCollisionWithScore(collider);
                             break;
                         case (int)CollisionLayer.Gem:
                             // collect gems
+                            userService.GemsRX.Value++;
                             collider.transform.parent.gameObject.SetActive(false);
                             break;
-                        case (int)CollisionLayer.Boostpad:
-                            // make invincible, increase speed
+                        case (int)CollisionLayer.BoostPad:
+                            // If the state is already invincible, reset it
+                            // to trigger the reactive property event
+                            if (character.StateRX.Value == CharacterState.Invincible)
+                                character.StateRX.Value = CharacterState.Unknown;
+                            
                             character.StateRX.Value = CharacterState.Invincible;
                             gameService.TriggerSpeedBoost();
                             break;
@@ -89,7 +97,7 @@ namespace RollyVortex.Scripts.Game.Controllers
                 // destroy game object
                 collider.gameObject.SetActive(false);
 
-                explosion = poolFactory.GetObstacle("ObstacleExplosionVFX");
+                explosion = poolFactory.GetObstacle(ObstacleType.ObstacleExplosion);
                 explosion.transform.position = collider.transform.position;
                 
                 explosion.SetActive(true);
@@ -112,8 +120,12 @@ namespace RollyVortex.Scripts.Game.Controllers
             character.StateRX.Value = CharacterState.Dead;
             character.Body.gameObject.SetActive(false);
             
-            explosion = poolFactory.GetObstacle("CharacterDeathVFX");
+            explosion = poolFactory.GetObstacle(ObstacleType.CharacterExplosion);
             explosion.transform.position = character.Body.position;
+            
+            // update the material of the particle to match the selected skin
+            explosion.GetComponent<ParticleSystemRenderer>().material = 
+                entitiesService.GetCharacterSkinData(userService.SelectedCharacterSkinRX.Value).Material;
             
             explosion.SetActive(true);
 
@@ -138,10 +150,6 @@ namespace RollyVortex.Scripts.Game.Controllers
                 child.DOScale(0f, 0.4f)
                     .SetEase(Ease.OutSine)
                     .Play();
-                // part.DOMove(new Vector3(pos.x + 1f, pos.y + 1f, 0f), 0.3f)
-                //     .From()
-                //     .SetEase(Ease.OutBounce)
-                //     .Play();
             }
         }
     }

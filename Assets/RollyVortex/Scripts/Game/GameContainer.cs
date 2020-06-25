@@ -21,12 +21,8 @@ namespace RollyVortex.Scripts.Game
 
             container
                 .Bind<IInjectionService>().To(injectionService)
+                .Bind<IObstacleGenerationService>().ToSingleton<ObstacleGenerationService>()
                 .Bind<IGameService>().ToSingleton<GameService>();
-                    // .Bind<ITouchService>().ToSingleton<TouchService>()
-                    // .Bind<IGameService>().ToSingleton<GameServiceTest>()
-                    // .Bind<IGameboardUIService>().ToSingleton<GameboardUIService>()
-                    // .Bind<IAnimationService>().ToSingleton<AnimationService>()
-                    // .Bind<IInitAnimations>().ToSingleton<InitAnimations>();
 
             BindControllers(container);
 
@@ -41,9 +37,9 @@ namespace RollyVortex.Scripts.Game
                 .Bind<ICharacterMovementController>().To<CharacterMovementController>()
                 .Bind<ICharacterCollisionController>().To<CharacterCollisionController>()
                 .Bind<ICharacterRollingController>().To<CharacterRollingController>()
+                .Bind<IReturnToPoolController>().To<ReturnToPoolController>()
+                .Bind<IObstacleOnEnableController>().To<ObstacleOnEnableController>()
                 .Bind<IEndlessTunnelController>().To<EndlessTunnelController>();
-
-            //     .Bind<ICardPlayedIndicationController>().To<CardPlayedIndicationController>();
         }
     }
 }

@@ -6,6 +6,7 @@ using UnityEngine.Scripting;
 using System.Collections.Generic;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
+using System;
 
 namespace RollyVortex.Scripts.Game.Controllers
 {
@@ -39,6 +40,14 @@ namespace RollyVortex.Scripts.Game.Controllers
             
             gameService.IsRunningRX
                 .Where(isRunning => isRunning)
+                .Subscribe(x => Reset())
+                .AddTo(tunnels[0].parent.gameObject);
+            
+            // Temporary - after game ends, reset the tunnels with a 1.5 second delay
+            // since we don't have an end-of-run view
+            gameService.IsRunningRX
+                .Where(isRunning => !isRunning)
+                .Delay(TimeSpan.FromSeconds(1.5f))
                 .Subscribe(x => Reset())
                 .AddTo(tunnels[0].parent.gameObject);
         }

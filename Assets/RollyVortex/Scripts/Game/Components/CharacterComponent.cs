@@ -20,6 +20,7 @@ namespace RollyVortex.Scripts.Game.Components
         
         public Transform Body;
         public GameObject Shield;
+        public GameObject ParticlesVFX;
         public Collider Collider;
         
         public IReactiveProperty<CharacterState> StateRX { get; private set; }
@@ -33,6 +34,8 @@ namespace RollyVortex.Scripts.Game.Components
         
         private Vector3 defaultCharacterRotation;
 
+        private IDisposable shieldDisposable;
+        
         public void SetSkin(int id)
         {
             var skinData = entitiesService.GetCharacterSkinData(id);
@@ -82,10 +85,22 @@ namespace RollyVortex.Scripts.Game.Components
             StateRX.Where(x => x == CharacterState.Invincible)
                 .Subscribe(x =>
                 {
-                    Shield.SetActive(true);
+                    // If you trigger 2 shields one after another,
+                    // ignore the first timer that sets it to false
+                    shieldDisposable?.Dispose();
+                    
+                    // Hacky way to reset the shield animation if two shields
+                    // are triggered one after another
+                    Shield.SetActive(false);
+                            Shield.SetActive(true);
 
-                    Observable.Timer(TimeSpan.FromSeconds(2))
-                        .Where(_ => gameService.IsRunningRX.Value)
+                    // Observable.TimerFrame(1)
+                    //     .Subscribe(_ =>
+                    //     {
+                    //     })
+                    //     .AddTo(this);
+
+                    shieldDisposable = Observable.Timer(TimeSpan.FromSeconds(2))
                         .Subscribe(_ =>
                         {
                             Shield.SetActive(false);
@@ -94,6 +109,13 @@ namespace RollyVortex.Scripts.Game.Components
                 })
                 .AddTo(this);
 
+            gameService.IsRunningRX
+                .Subscribe(isRunning =>
+                {
+                    ParticlesVFX.SetActive(isRunning);
+                })
+                .AddTo(this);
+            
             userService.SelectedCharacterSkinRX
                 .Subscribe(x => SetSkin(x))
                 .AddTo(this);

@@ -7,12 +7,14 @@ namespace RollyVortex.Scripts.Interfaces.Services
 {
     public interface IEntitiesService
     {
-        void Init(GameObject characterPrefab, Material tunnelMaterial);
+        void Init(GameObject characterPrefab, Material tunnelMaterial, Material obstaclesMaterial, List<Color> obstaclesColors);
 
         CharacterComponent GenerateCharacter(Transform parent, Vector3 position, int skinId = -1);
 
         CharacterSkinData GetCharacterSkinData(int id);
 
         void SetTunnelSkin(int id);
+
+        void ChangeObstaclesColor();
     }
 }

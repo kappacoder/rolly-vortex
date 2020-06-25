@@ -4781,8 +4781,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3288801144010930954}
   m_LocalRotation: {x: -0, y: -0.4226182, z: 0.9063078, w: 0}
-  m_LocalPosition: {x: 0.01999998, y: 1.603, z: -0.253}
-  m_LocalScale: {x: 0.12, y: 0, z: 0.13}
+  m_LocalPosition: {x: 0, y: 1.67, z: -0.224}
+  m_LocalScale: {x: 0.11, y: 0, z: 0.11}
   m_Children: []
   m_Father: {fileID: 5006921116888329628}
   m_RootOrder: 2
@@ -4898,6 +4898,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Body: {fileID: 5006921117078763646}
   Shield: {fileID: 3288801144010930954}
+  ParticlesVFX: {fileID: 67398971228587598}
   Collider: {fileID: 5006921117078763641}
 --- !u!1001 &4923480104296002204
 PrefabInstance:

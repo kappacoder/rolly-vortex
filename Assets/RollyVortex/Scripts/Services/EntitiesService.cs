@@ -16,12 +16,17 @@ namespace RollyVortex.Scripts.Services
 
         private GameObject characterPrefab;
         private Material tunnelMaterial;
+        private Material obstaclesMaterial;
+        private List<Color> obstaclesColors;
+
+        private Color currentObstaclesColor;
     
-        public void Init(GameObject characterPrefab, Material tunnelMaterial)
+        public void Init(GameObject characterPrefab, Material tunnelMaterial, Material obstaclesMaterial, List<Color> obstaclesColors)
         {
             this.characterPrefab = characterPrefab;
-
             this.tunnelMaterial = tunnelMaterial;
+            this.obstaclesMaterial = obstaclesMaterial;
+            this.obstaclesColors = obstaclesColors;
         }
 
         public CharacterComponent GenerateCharacter(Transform parent, Vector3 position, int skinId = -1)
@@ -51,6 +56,19 @@ namespace RollyVortex.Scripts.Services
                 return;
             
             tunnelMaterial.SetTexture("_BaseMap", skinData.Texture);
+        }
+
+        public void ChangeObstaclesColor()
+        {
+            currentObstaclesColor = tunnelMaterial.GetColor("_BaseColor");
+            Color newColor = currentObstaclesColor;
+            
+            while (newColor == currentObstaclesColor)
+            {
+                newColor = obstaclesColors[Random.Range(0, obstaclesColors.Count)];
+            }
+
+            obstaclesMaterial.SetColor("_BaseColor", newColor);
         }
     }
 }

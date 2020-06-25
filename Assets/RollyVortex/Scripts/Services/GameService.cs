@@ -3,19 +3,17 @@ using UniRx;
 using System;
 using UnityEngine;
 using UnityEngine.Scripting;
+using RollyVortex.Scripts.Utils;
 using RollyVortex.Scripts.Game.Components;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
-using RollyVortex.Scripts.Utils;
-using System.Collections.Generic;
-using Random = UnityEngine.Random;
 
 namespace RollyVortex.Scripts.Services
 {
     public enum GameMode
     {
         Endless,
-        Finish
+        Challenge
     }
     
     [Preserve]
@@ -36,46 +34,28 @@ namespace RollyVortex.Scripts.Services
         [Inject]
         private IEntitiesService entitiesService;
         [Inject]
+        private IObstacleGenerationService obstacleGenerationService;
+        [Inject]
         private IInjectionService injectionService;
         [Inject]
         private PoolFactory poolFactory;
         
-        private Transform gameWrapper;
         private Transform movingObjectsWrapper;
-        private Transform obstaclesWrapper;
         private CharacterComponent mainCharacter;
 
         private CompositeDisposable disposables;
 
-        private Vector3 characterDefaultPosition = new Vector3(-2.5f, 0f, 1f);
-        private float gameSpeed = 20f;
+        private float gameSpeed = Constants.Game.DefaultGameSpeed;
 
-        private IList<GameObject> obstacles;
-        private IList<GameObject> gems;
-
-        private float firstObstacleDistance = 5f;
-        private float distanceBetweenObstacles = 10f;
-        
-        private int obstaclesPassed = 0;
-        
         public void Init(Transform gameWrapper)
         {
             disposables = new CompositeDisposable();
-            obstacles = new List<GameObject>();
-            gems = new List<GameObject>();
             
-            this.gameWrapper = gameWrapper;
             movingObjectsWrapper = gameWrapper.Find("MovingObjects");
-            obstaclesWrapper = movingObjectsWrapper.Find("Obstacles");
-            
-            // Generate the main character and bind controllers to it
-            mainCharacter = entitiesService.GenerateCharacter(gameWrapper, characterDefaultPosition);
-            injectionService.Container.Resolve<ICharacterMovementController>().Init(mainCharacter);
-            injectionService.Container.Resolve<ICharacterCollisionController>().Init(mainCharacter);
-            injectionService.Container.Resolve<ICharacterRollingController>().Init(mainCharacter);
-            
-            injectionService.Container.Resolve<IEndlessTunnelController>().Init(movingObjectsWrapper.Find("Tunnels"));
-            
+
+            GenerateMainCharacter(gameWrapper);
+            BindGameControllers();
+             
             Subscribe();
         }
 
@@ -92,35 +72,53 @@ namespace RollyVortex.Scripts.Services
             switch (gameMode)
             {
                 case GameMode.Endless:
-                    
                     IsRunningRX.Value = true;
                     break;
-                case GameMode.Finish:
+                case GameMode.Challenge:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(gameMode), gameMode, null);
+                    throw new NotImplementedException();
             }
         }
 
+        public void Reset()
+        {
+            obstacleGenerationService.Reset();
+            mainCharacter.Reset();
+            
+            movingObjectsWrapper.position = Vector3.zero;
+
+            gameSpeed = Constants.Game.DefaultGameSpeed;
+            
+            CurrentScoreRX.Value = 0;
+        }
+        
+        private IDisposable speedBoostDisposable1;
+        private IDisposable speedBoostDisposable2;
+        
         public void TriggerSpeedBoost()
         {
-            gameSpeed *= 1.5f;
+            // If you trigger 2 speed boosts one after another,
+            // ignore the first one's timers
+            speedBoostDisposable1?.Dispose();
+            speedBoostDisposable2?.Dispose();
 
-            Observable.Timer(TimeSpan.FromSeconds(1))
+            gameSpeed *= Constants.Game.BoosterPadSpeedMultiplier;
+
+            // return to normal speed
+            speedBoostDisposable1 = Observable.Timer(TimeSpan.FromSeconds(Constants.Game.ShieldDuration - 1f))
                 .Where(x => IsRunningRX.Value)
-                .Subscribe(x =>
-                {
-                    gameSpeed = 20f;
-                })
-                .AddTo(mainCharacter.gameObject);
+                .Subscribe(x => UpdateSpeed())
+                .AddTo(disposables);
             
-            Observable.Timer(TimeSpan.FromSeconds(2))
+            // disable shield
+            speedBoostDisposable2 = Observable.Timer(TimeSpan.FromSeconds(Constants.Game.ShieldDuration))
                 .Where(x => IsRunningRX.Value)
                 .Subscribe(x =>
                 {
                     mainCharacter.StateRX.Value = CharacterState.Alive;
                 })
-                .AddTo(mainCharacter.gameObject);
+                .AddTo(disposables);
         }
         
         private void Subscribe()
@@ -135,7 +133,20 @@ namespace RollyVortex.Scripts.Services
                 .Subscribe(_ =>
                 {
                     IsRunningRX.Value = false;
-                });
+                })
+                .AddTo(disposables);
+
+            CurrentScoreRX
+                .Subscribe(x =>
+                {
+                    if (x % Constants.Game.ChangeObstaclesColorEveryXObstacles == 0)
+                        entitiesService.ChangeObstaclesColor();
+                    
+                    if (mainCharacter.StateRX.Value != CharacterState.Invincible ||
+                        mainCharacter.StateRX.Value != CharacterState.Dead)
+                        UpdateSpeed();
+                })
+                .AddTo(disposables);
         }
 
         private void OnFixedUpdate()
@@ -143,104 +154,26 @@ namespace RollyVortex.Scripts.Services
             // Move obstacles towards the camera
             movingObjectsWrapper.position -= new Vector3(0f, 0f, gameSpeed * Time.fixedDeltaTime);
 
-            if (movingObjectsWrapper.position.z + firstObstacleDistance > 0)
-                return;
-
-            if (((movingObjectsWrapper.position.z + firstObstacleDistance) / distanceBetweenObstacles) * -1 >
-                obstacles.Count + obstaclesPassed)
-            {
-                SpawnObstacle();
-                
-                if (Random.Range(0, 3) == 0)
-                    SpawnGem();
-                
-                if (Random.Range(0, 3) == 0)
-                    SpawnBoostpad();
-            }
-            
-            // check if obstacles need to be returned to pool
-            foreach (GameObject o in obstacles)
-            {
-                if (o.transform.position.z < -8f)
-                {
-                    o.SetActive(false);
-                    obstacles.Remove(o);
-                    obstaclesPassed++;
-                    
-                    break;
-                }
-            }
-            
-            // check if gems need to be returned to pool
-            foreach (GameObject gem in gems)
-            {
-                if (gem.transform.position.z < -8f)
-                {
-                    gem.SetActive(false);
-                    gems.Remove(gem);
-                    
-                    break;
-                }
-            }
+            obstacleGenerationService.CheckForNextObstacle(CurrentScoreRX.Value, movingObjectsWrapper.position.z * -1);
         }
 
-        private void SpawnObstacle()
+        private void GenerateMainCharacter(Transform parent)
         {
-            var obstacle = poolFactory.GetObstacle(ObstacleDifficulty.Easy);
-
-            var pos = obstacle.transform.position;
-            obstacle.transform.position = new Vector3(pos.x, pos.y, 20f);
-            obstacle.transform.Rotate(0f, 0f, Random.Range(0, 360));
+            mainCharacter = entitiesService.GenerateCharacter(parent, Constants.Game.DefaultCharacterPosition);
             
-            obstacle.SetActive(true);
-            
-            obstacles.Add(obstacle);
+            injectionService.Container.Resolve<ICharacterMovementController>().Init(mainCharacter);
+            injectionService.Container.Resolve<ICharacterCollisionController>().Init(mainCharacter);
+            injectionService.Container.Resolve<ICharacterRollingController>().Init(mainCharacter);
         }
 
-        private void SpawnGem()
+        private void BindGameControllers()
         {
-            var gem = poolFactory.GetObstacle("Gem");
-
-            var pos = gem.transform.position;
-            gem.transform.position = new Vector3(pos.x, pos.y, 20f + distanceBetweenObstacles/2f);
-            gem.transform.Rotate(0f, 0f, Random.Range(0, 360));
-            
-            gem.SetActive(true);
-            
-            gems.Add(gem);
-        }
-        
-        private void SpawnBoostpad()
-        {
-            var pad = poolFactory.GetObstacle("Boostpad");
-
-            var pos = pad.transform.position;
-            // 1.5f is half the depth of boostpad
-            pad.transform.position = new Vector3(pos.x, pos.y, 20f + distanceBetweenObstacles/2f - 2.15f);
-            pad.transform.Rotate(0f, 0f, Random.Range(0, 360));
-            
-            pad.SetActive(true);
-            
-            gems.Add(pad);
+            injectionService.Container.Resolve<IEndlessTunnelController>().Init(movingObjectsWrapper.Find("Tunnels"));
         }
 
-        private void Reset()
+        private void UpdateSpeed()
         {
-            foreach (GameObject o in obstacles)
-            {
-                o.SetActive(false);
-            }
-            
-            obstacles.Clear();
-            obstaclesPassed = 0;
-            
-            mainCharacter.Reset();
-            
-            movingObjectsWrapper.position = Vector3.zero;
-
-            gameSpeed = 20f;
-            
-            CurrentScoreRX.Value = 0;
+            gameSpeed = Math.Min(Constants.Game.DefaultGameSpeed + CurrentScoreRX.Value * Constants.Game.SpeedIncreasePerObstaclePassed, Constants.Game.MaxGameSpeed);
         }
     }
 }

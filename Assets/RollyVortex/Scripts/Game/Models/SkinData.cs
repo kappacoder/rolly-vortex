@@ -43,6 +43,8 @@ namespace RollyVortex.Scripts.Game.Models
     [Serializable]
     public class CharacterSkinData : SkinData
     {
+        public Material Material;
+        
         public GameObject Body;
     }
 }

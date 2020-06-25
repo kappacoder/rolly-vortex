@@ -76,7 +76,7 @@ namespace RollyVortex.Scripts.UI.SkinsMenu
             // data index of the first sub cell
             var di = dataIndex * NumberOfCellsPerRow;
 
-            cellView.name = "Skins " + (di).ToString() + " to " + ((di) + NumberOfCellsPerRow - 1).ToString();
+            cellView.name = "SkinsButton " + (di).ToString() + " to " + ((di) + NumberOfCellsPerRow - 1).ToString();
 
             // pass in a reference to our data set with the offset for this cell
             cellView.SetData(ref data, di, CellViewSelected);

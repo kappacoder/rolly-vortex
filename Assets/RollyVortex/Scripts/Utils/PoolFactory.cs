@@ -6,12 +6,15 @@ using System.Collections.Generic;
 
 namespace RollyVortex.Scripts.Utils
 {
-    public enum ObstacleDifficulty
+    public enum ObstacleType
     {
-        None,
         Easy,
         Medium,
-        Hard
+        Hard,
+        Gem,
+        BoostPad,
+        ObstacleExplosion,
+        CharacterExplosion
     }
 
     public class PoolFactory : MonoBehaviour
@@ -43,15 +46,15 @@ namespace RollyVortex.Scripts.Utils
         }
         
         /// <summary>
-        /// Get a random obstacle by difficulty
+        /// Get a random obstacle by obstacleType
         /// </summary>
-        /// <param name="difficulty"></param>
+        /// <param name="type"></param>
         /// <returns></returns>
-        public GameObject GetObstacle(ObstacleDifficulty difficulty)
+        public GameObject GetObstacle(ObstacleType type)
         {
             try
             {
-                var obstaclesData = ObstaclesPoolConfig.Where(x => x.Difficulty == difficulty)
+                var obstaclesData = ObstaclesPoolConfig.Where(x => x.obstacleType == type)
                     .ToArray();
 
                 string id = obstaclesData[UnityEngine.Random.Range(0, obstaclesData.Length)].Id;
@@ -60,7 +63,7 @@ namespace RollyVortex.Scripts.Utils
             }
             catch
             {
-                Debug.LogWarning("An object with the difficulty " + difficulty +
+                Debug.LogWarning("An object with the obstacleType " + type +
                     " has not been added to the pool. Add it from SharedComponent -> PoolFactory -> ObstaclesPoolConfig");
 
                 return null;
@@ -101,6 +104,6 @@ namespace RollyVortex.Scripts.Utils
     [Serializable]
     public class ObstaclePoolData : ObjectPoolData
     {
-        public ObstacleDifficulty Difficulty;
+        public ObstacleType obstacleType;
     }
 }

@@ -1,8 +1,8 @@
 ﻿using Adic;
-using RollyVortex.Scripts.Game.Components;
 using UniRx;
 using UnityEngine;
 using UnityEngine.Scripting;
+using RollyVortex.Scripts.Game.Components;
 using RollyVortex.Scripts.Interfaces.Services;
 using RollyVortex.Scripts.Interfaces.Game.Controllers;
 
@@ -16,8 +16,6 @@ namespace RollyVortex.Scripts.Game.Controllers
     
         private Transform characterTransform;
 
-        private float rotationSpeed = 0.5f;
-    
         public void Init(CharacterComponent character)
         {
             characterTransform = character.transform;
@@ -38,7 +36,7 @@ namespace RollyVortex.Scripts.Game.Controllers
         {
             Vector2 touchDelta = Input.GetTouch(0).deltaPosition;
 
-            characterTransform.Rotate(Vector3.forward, touchDelta.x * rotationSpeed);
+            characterTransform.Rotate(Vector3.forward, touchDelta.x * Constants.Game.CharacterControlSpeedMultiplier);
         }
     }
 }

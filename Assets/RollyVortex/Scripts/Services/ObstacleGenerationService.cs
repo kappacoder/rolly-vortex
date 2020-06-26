@@ -22,14 +22,13 @@ namespace RollyVortex.Scripts.Services
         
         private List<ObstacleSectionData> obstacleSections;
 
-        private ObstacleSectionData currentSection;
-        private int currentSectionProgress = 0;
-        
         private IList<GameObject> entities;
         
-        private CompositeDisposable disposables;
-
+        private ObstacleSectionData currentSection;
+        private int currentSectionProgress = 0;
         private int generatedObstacles = 0;
+        
+        private CompositeDisposable disposables;
         
         public void Init(List<ObstacleSectionData> obstacleSections)
         {
@@ -50,11 +49,11 @@ namespace RollyVortex.Scripts.Services
             foreach (GameObject o in entities)
                 o.SetActive(false);
 
+            entities.Clear();
+            
             currentSection = null;
             currentSectionProgress = 0;
             generatedObstacles = 0;
-            
-            entities.Clear();
         }
 
         public void CheckForNextObstacle(int gameScore, float zDistancePassed)
@@ -122,7 +121,6 @@ namespace RollyVortex.Scripts.Services
             generatedObstacles++;
             currentSectionProgress++;
 
-            // End the current section
             if (currentSectionProgress >= currentSection.Obstacles.Count)
                 currentSection = null;
         }

@@ -6,6 +6,8 @@ namespace RollyVortex.Scripts.Interfaces.Services
 {
     public interface IGameService
     {
+        IReactiveProperty<bool> IsReadyRX { get; }
+        
         IReactiveProperty<bool> IsRunningRX { get; }
         
         IReactiveProperty<int> CurrentScoreRX { get; }

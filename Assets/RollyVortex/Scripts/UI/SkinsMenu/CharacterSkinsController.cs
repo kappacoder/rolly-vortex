@@ -1,10 +1,10 @@
 ﻿using Adic;
+using UniRx;
 using UnityEngine;
 using System.Collections.Generic;
 using EnhancedUI.EnhancedScroller;
 using RollyVortex.Scripts.Game.Models;
 using RollyVortex.Scripts.Interfaces.Services;
-using RollyVortex.Scripts.Services;
 
 namespace RollyVortex.Scripts.UI.SkinsMenu
 {
@@ -18,43 +18,46 @@ namespace RollyVortex.Scripts.UI.SkinsMenu
 
         [Inject]
         private IUserService userService;
+        [Inject]
+        private IEntitiesService entitiesService;
+        [Inject]
+        private IGameService gameService;
         
         private List<CharacterSkinData> data;
 
         void Start()
         {
             this.Inject();
+            
+            Subscribe();
         }
 
-        [Inject]
-        private void PostConstruct()
+        private void Subscribe()
         {
-            Scroller.Delegate = this;
+            gameService.IsReadyRX
+                .Where(ready => ready)
+                .First()
+                .Subscribe(x =>
+                {
+                    Scroller.Delegate = this;
             
-            data = EntitiesService.CharacterSkins;
-            data[userService.SelectedCharacterSkinRX.Value].Selected = true;
+                    data = entitiesService.CharacterSkins;
+                    data[userService.SelectedCharacterSkinRX.Value].Selected = true;
             
-            Scroller.ReloadData();
+                    Scroller.ReloadData();
+                })
+                .AddTo(this);
         }
         
         private void CellViewSelected(CharacterSkinRowCellView cellView)
         {
             if (cellView == null)
-            {
-                // nothing was Selected
-            }
-            else
-            {
-                // get the Selected data index of the cell view
-                var selectedDataIndex = cellView.DataIndex;
+                return;
+            
+            var selectedDataIndex = cellView.DataIndex;
 
-                // loop through each item in the data list and turn
-                // on or off the selection state.
-                for (var i = 0; i < data.Count; i++)
-                {
-                    data[i].Selected = (selectedDataIndex == i);
-                }
-            }
+            for (var i = 0; i < data.Count; i++)
+                data[i].Selected = (selectedDataIndex == i);
         }
 
         #region EnhancedScroller Handlers
@@ -73,15 +76,12 @@ namespace RollyVortex.Scripts.UI.SkinsMenu
         {
             CharacterSkinCellView cellView = scroller.GetCellView(CellViewPrefab) as CharacterSkinCellView;
 
-            // data index of the first sub cell
             var di = dataIndex * NumberOfCellsPerRow;
 
             cellView.name = "SkinsButton " + (di).ToString() + " to " + ((di) + NumberOfCellsPerRow - 1).ToString();
 
-            // pass in a reference to our data set with the offset for this cell
             cellView.SetData(ref data, di, CellViewSelected);
 
-            // return the cell to the Scroller
             return cellView;
         }
 

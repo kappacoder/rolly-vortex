@@ -1,10 +1,8 @@
 ﻿using Adic;
 using UniRx;
-using UnityEngine;
-using UnityEngine.UI;
-using RollyVortex.Scripts.Services;
-using RollyVortex.Scripts.Interfaces.Services;
 using TMPro;
+using UnityEngine;
+using RollyVortex.Scripts.Interfaces.Services;
 
 namespace RollyVortex.Scripts.UI
 {

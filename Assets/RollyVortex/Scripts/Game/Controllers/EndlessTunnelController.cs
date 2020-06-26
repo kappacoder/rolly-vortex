@@ -44,7 +44,7 @@ namespace RollyVortex.Scripts.Game.Controllers
                 .AddTo(tunnels[0].parent.gameObject);
             
             // Temporary - after game ends, reset the tunnels with a 1.5 second delay
-            // since we don't have an end-of-run view
+            // since we don't have an end-of-run UI
             gameService.IsRunningRX
                 .Where(isRunning => !isRunning)
                 .Delay(TimeSpan.FromSeconds(1.5f))

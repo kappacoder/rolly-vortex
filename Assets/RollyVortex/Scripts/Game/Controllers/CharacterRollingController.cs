@@ -16,8 +16,6 @@ namespace RollyVortex.Scripts.Game.Controllers
     
         private CharacterComponent character;
 
-        private float rollSpeedMultiplier = 1.2f;
-    
         public void Init(CharacterComponent character)
         {
             this.character = character;
@@ -35,7 +33,7 @@ namespace RollyVortex.Scripts.Game.Controllers
 
         private void Roll()
         {
-            character.Body.Rotate(Vector3.left, gameService.GameSpeed * rollSpeedMultiplier);
+            character.Body.Rotate(Vector3.left, gameService.GameSpeed * Constants.Game.RollingSpeedMultiplier);
         }
     }
 }

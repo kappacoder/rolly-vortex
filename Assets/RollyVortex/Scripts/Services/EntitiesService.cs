@@ -11,8 +11,8 @@ namespace RollyVortex.Scripts.Services
     [Preserve]
     public class EntitiesService : IEntitiesService
     {
-        public static List<CharacterSkinData> CharacterSkins { get; set; }
-        public static List<TunnelSkinData> TunnelSkins { get; set; }
+        public List<CharacterSkinData> CharacterSkins { get; private set; }
+        public List<TunnelSkinData> TunnelSkins { get; private set; }
 
         private GameObject characterPrefab;
         private Material tunnelMaterial;
@@ -21,12 +21,16 @@ namespace RollyVortex.Scripts.Services
 
         private Color currentObstaclesColor;
     
-        public void Init(GameObject characterPrefab, Material tunnelMaterial, Material obstaclesMaterial, List<Color> obstaclesColors)
+        public void Init(GameObject characterPrefab, Material tunnelMaterial, Material obstaclesMaterial,
+            List<Color> obstaclesColors, List<CharacterSkinData> characterSkins, List<TunnelSkinData> tunnelSkins)
         {
             this.characterPrefab = characterPrefab;
             this.tunnelMaterial = tunnelMaterial;
             this.obstaclesMaterial = obstaclesMaterial;
             this.obstaclesColors = obstaclesColors;
+
+            CharacterSkins = characterSkins;
+            TunnelSkins = tunnelSkins;
         }
 
         public CharacterComponent GenerateCharacter(Transform parent, Vector3 position, int skinId = -1)
@@ -60,13 +64,11 @@ namespace RollyVortex.Scripts.Services
 
         public void ChangeObstaclesColor()
         {
-            currentObstaclesColor = tunnelMaterial.GetColor("_BaseColor");
+            currentObstaclesColor = obstaclesMaterial.GetColor("_BaseColor");
             Color newColor = currentObstaclesColor;
             
             while (newColor == currentObstaclesColor)
-            {
                 newColor = obstaclesColors[Random.Range(0, obstaclesColors.Count)];
-            }
 
             obstaclesMaterial.SetColor("_BaseColor", newColor);
         }

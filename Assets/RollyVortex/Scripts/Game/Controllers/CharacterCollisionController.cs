@@ -64,22 +64,13 @@ namespace RollyVortex.Scripts.Game.Controllers
                             OnCollisionWithObstacle(collider);
                             break;
                         case (int)CollisionLayer.Score:
-                            // increase score
                             OnCollisionWithScore(collider);
                             break;
                         case (int)CollisionLayer.Gem:
-                            // collect gems
-                            userService.GemsRX.Value++;
-                            collider.transform.parent.gameObject.SetActive(false);
+                            OnCollisionWithGem(collider);
                             break;
                         case (int)CollisionLayer.BoostPad:
-                            // If the state is already invincible, reset it
-                            // to trigger the reactive property event
-                            if (character.StateRX.Value == CharacterState.Invincible)
-                                character.StateRX.Value = CharacterState.Unknown;
-                            
-                            character.StateRX.Value = CharacterState.Invincible;
-                            gameService.TriggerSpeedBoost();
+                            OnCollisionWithBoostPad();
                             break;
                     }
                 })
@@ -88,13 +79,14 @@ namespace RollyVortex.Scripts.Game.Controllers
 
         private void OnCollisionWithObstacle(Collider collider)
         {
+            // Stop all camera tweens
             Camera.main.DOKill(true);
 
             GameObject explosion;
             
+            // Trigger obstacle destruction if invincible
             if (character.StateRX.Value == CharacterState.Invincible)
             {
-                // destroy game object
                 collider.gameObject.SetActive(false);
 
                 explosion = poolFactory.GetObstacle(ObstacleType.ObstacleExplosion);
@@ -116,14 +108,14 @@ namespace RollyVortex.Scripts.Game.Controllers
                 return;
             }
             
-            // Die
+            // Trigger character death
             character.StateRX.Value = CharacterState.Dead;
             character.Body.gameObject.SetActive(false);
             
             explosion = poolFactory.GetObstacle(ObstacleType.CharacterExplosion);
             explosion.transform.position = character.Body.position;
             
-            // update the material of the particle to match the selected skin
+            // Update the material of the death particle to match the selected skin
             explosion.GetComponent<ParticleSystemRenderer>().material = 
                 entitiesService.GetCharacterSkinData(userService.SelectedCharacterSkinRX.Value).Material;
             
@@ -151,6 +143,24 @@ namespace RollyVortex.Scripts.Game.Controllers
                     .SetEase(Ease.OutSine)
                     .Play();
             }
+        }
+
+        private void OnCollisionWithGem(Collider collider)
+        {
+            userService.GemsRX.Value++;
+            
+            collider.transform.parent.gameObject.SetActive(false);
+        }
+
+        private void OnCollisionWithBoostPad()
+        {
+            // If the state is already invincible, reset it
+            // to trigger the reactive property event
+            if (character.StateRX.Value == CharacterState.Invincible)
+                character.StateRX.Value = CharacterState.Unknown;
+                            
+            character.StateRX.Value = CharacterState.Invincible;
+            gameService.TriggerSpeedBoost();
         }
     }
 }

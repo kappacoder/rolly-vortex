@@ -15,13 +15,19 @@ namespace RollyVortex.Scripts
             // The max game speed
             public static readonly float MaxGameSpeed = 27f;
             
+            // Character rolling speed multiplier
+            public static readonly float RollingSpeedMultiplier = 1.2f;
+            
+            // Character control ( movement left/right ) speed multiplier
+            public static readonly float CharacterControlSpeedMultiplier = 0.5f;
+            
             // Speed increase per obstacle passed
             public static readonly float SpeedIncreasePerObstaclePassed = 0.1f;
 
             // After what z-distance will obstacles start spawning
             public static readonly float FirstObstacleDistance = 5f;
             
-            // Default Z-distance between obstacles
+            // Default Z-distance between obstaclesc
             public static readonly float DefaultDistanceBetweenObstacles = 10f;
             
             // Default Z-position to spawn new obstacles
@@ -35,7 +41,7 @@ namespace RollyVortex.Scripts
 
             // Every X player score a new predefined section of obstacles will be spawned
             // ( between sections single random obstacles are spawned to vary the gameplay )
-            public static readonly int SpawnObstacleSectionsEveryXObstacles = 10;
+            public static readonly int SpawnObstacleSectionsEveryXObstacles = 8;
             
             // Every X obstacles their color will be changed
             public static readonly int ChangeObstaclesColorEveryXObstacles = 10;

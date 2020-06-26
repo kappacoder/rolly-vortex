@@ -3,7 +3,6 @@ using UnityEngine;
 using UnityEngine.Scripting;
 using SubjectNerd.Utilities;
 using System.Collections.Generic;
-using RollyVortex.Scripts.Services;
 using RollyVortex.Scripts.Game.Models;
 using RollyVortex.Scripts.Interfaces.Services;
 
@@ -32,14 +31,6 @@ namespace RollyVortex.Scripts.Game.Components
         [Inject]
         private IObstacleGenerationService obstacleGenerationService;
 
-        void Awake()
-        {
-            // Hacky way to have the skins loaded as static members
-            // FIX TODO:
-            EntitiesService.CharacterSkins = CharacterSkins;
-            EntitiesService.TunnelSkins = TunnelSkins;
-        }
-        
         void Start()
         {
             this.Inject();
@@ -53,8 +44,11 @@ namespace RollyVortex.Scripts.Game.Components
 
         private void InitServices()
         {
-            entitiesService.Init(CharacterPrefab, TunnelMaterial, ObstaclesMaterial, ObstaclesColors);
+            entitiesService.Init(CharacterPrefab, TunnelMaterial, ObstaclesMaterial,
+                ObstaclesColors, CharacterSkins, TunnelSkins);
+            
             obstacleGenerationService.Init(ObstacleSections);
+            
             gameService.Init(GameWrapper);
         }
     }

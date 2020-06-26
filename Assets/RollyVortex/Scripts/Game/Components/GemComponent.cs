@@ -2,6 +2,7 @@
 
 namespace RollyVortex.Scripts.Game.Components
 {
+    // TODO: This could be done as a controller
     public class GemComponent : MonoBehaviour
     {
         [SerializeField]

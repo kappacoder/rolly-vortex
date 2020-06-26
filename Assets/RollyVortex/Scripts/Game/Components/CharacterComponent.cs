@@ -35,6 +35,8 @@ namespace RollyVortex.Scripts.Game.Components
         private Vector3 defaultCharacterRotation;
 
         private IDisposable shieldDisposable;
+
+        private MeshRenderer currentBodyRenderer;
         
         public void SetSkin(int id)
         {
@@ -42,12 +44,30 @@ namespace RollyVortex.Scripts.Game.Components
 
             if (skinData == null)
                 return;
-            
-            GameObject newBody = Instantiate(skinData.Body, transform);
-            DestroyImmediate(Body.gameObject);
 
-            Body = newBody.transform;
-            Collider = Body.GetComponent<Collider>();
+            if (Body.name == skinData.Body.name)
+            {
+                // No need to create a new body, just change the material
+                currentBodyRenderer.material = skinData.Material;
+                
+                // This will trigger the on enable animation clip
+                Body.gameObject.SetActive(false);
+                Body.gameObject.SetActive(true);
+            }
+            else
+            {
+                GameObject newBody = Instantiate(skinData.Body, transform);
+                newBody.name = skinData.Body.name;
+                
+                DestroyImmediate(Body.gameObject);
+
+                Body = newBody.transform;
+                
+                Collider = Body.GetComponent<Collider>();
+                currentBodyRenderer = Body.GetComponent<MeshRenderer>();
+                
+                currentBodyRenderer.material = skinData.Material;
+            }
             
             OnSkinChangedRX.OnNext(true);
         }
@@ -67,6 +87,8 @@ namespace RollyVortex.Scripts.Game.Components
             OnSkinChangedRX = new Subject<bool>();
 
             defaultCharacterRotation = transform.eulerAngles;
+            
+            currentBodyRenderer = Body.GetComponent<MeshRenderer>();
         }
 
         private void Start()
@@ -82,23 +104,18 @@ namespace RollyVortex.Scripts.Game.Components
 
         private void Subscribe()
         {
-            StateRX.Where(x => x == CharacterState.Invincible)
+            StateRX
+                .Where(x => x == CharacterState.Invincible)
                 .Subscribe(x =>
                 {
                     // If you trigger 2 shields one after another,
-                    // ignore the first timer that sets it to false
+                    // stop the timer that sets it to false
                     shieldDisposable?.Dispose();
                     
-                    // Hacky way to reset the shield animation if two shields
+                    // Hacky way to reset the shield animation clip if two shields
                     // are triggered one after another
                     Shield.SetActive(false);
-                            Shield.SetActive(true);
-
-                    // Observable.TimerFrame(1)
-                    //     .Subscribe(_ =>
-                    //     {
-                    //     })
-                    //     .AddTo(this);
+                    Shield.SetActive(true);
 
                     shieldDisposable = Observable.Timer(TimeSpan.FromSeconds(2))
                         .Subscribe(_ =>

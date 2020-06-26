@@ -19,6 +19,8 @@ namespace RollyVortex.Scripts.Services
     [Preserve]
     public class GameService : IGameService
     {
+        public IReactiveProperty<bool> IsReadyRX { get; } = new ReactiveProperty<bool>();
+        
         public IReactiveProperty<bool> IsRunningRX { get; } = new ReactiveProperty<bool>();
 
         public IReactiveProperty<int> CurrentScoreRX { get; } = new ReactiveProperty<int>();
@@ -43,9 +45,9 @@ namespace RollyVortex.Scripts.Services
         private Transform movingObjectsWrapper;
         private CharacterComponent mainCharacter;
 
-        private CompositeDisposable disposables;
-
         private float gameSpeed = Constants.Game.DefaultGameSpeed;
+
+        private CompositeDisposable disposables;
 
         public void Init(Transform gameWrapper)
         {
@@ -57,6 +59,8 @@ namespace RollyVortex.Scripts.Services
             BindGameControllers();
              
             Subscribe();
+
+            IsReadyRX.Value = true;
         }
 
         public void Dispose()
@@ -99,19 +103,19 @@ namespace RollyVortex.Scripts.Services
         public void TriggerSpeedBoost()
         {
             // If you trigger 2 speed boosts one after another,
-            // ignore the first one's timers
+            // dispose of previous observables
             speedBoostDisposable1?.Dispose();
             speedBoostDisposable2?.Dispose();
 
             gameSpeed *= Constants.Game.BoosterPadSpeedMultiplier;
 
-            // return to normal speed
+            // return to normal speed after X-1 seconds
             speedBoostDisposable1 = Observable.Timer(TimeSpan.FromSeconds(Constants.Game.ShieldDuration - 1f))
                 .Where(x => IsRunningRX.Value)
                 .Subscribe(x => UpdateSpeed())
                 .AddTo(disposables);
             
-            // disable shield
+            // disable shield after X seconds
             speedBoostDisposable2 = Observable.Timer(TimeSpan.FromSeconds(Constants.Game.ShieldDuration))
                 .Where(x => IsRunningRX.Value)
                 .Subscribe(x =>
@@ -154,6 +158,7 @@ namespace RollyVortex.Scripts.Services
             // Move obstacles towards the camera
             movingObjectsWrapper.position -= new Vector3(0f, 0f, gameSpeed * Time.fixedDeltaTime);
 
+            // Check if a new obstacles needs to be created
             obstacleGenerationService.CheckForNextObstacle(CurrentScoreRX.Value, movingObjectsWrapper.position.z * -1);
         }
 

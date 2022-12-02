@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/RollyVortex/Scenes/Game.unity
+    path: Assets/_RollyVortex/Scenes/Game.unity
     guid: a29c28135f8679b448f4e779d2c58613
   m_configObjects: {}
